@@ -14,7 +14,7 @@
             return evt;
         };
 
-        window.CustomEvent.prototype = window.Event.prototype;
+        window.CclassustomEvent.prototype = window.Event.prototype;
     }
 
     document.addEventListener('touchstart', handleTouchStart, false);
