@@ -1,15 +1,57 @@
 import React from "react";
+import PropTypes from 'prop-types';
 import '../styles/video.css';
 
 class Video extends React.Component {
+
+    componentWillUnmount = () => {
+        this.pauseVideo();
+    };
+
+    getVideoRef = elem => {
+        this.video = elem
+    }
+
+    playVideo = () => {
+        this.video.play()
+    };
+
+    pauseVideo = () => {
+        this.video.pause();
+    };
+
     render() {
+        const { controls, autoPlay, muted, source, onEnded } = this.props;
         return (
-            <video className="video" controls autoPlay muted>
-                <source src="https://d1104ewo8apaup.cloudfront.net/video/207d2d6903e6957e0c6125b4f45eb9bfxw5yowt7.mp4"
-                    type="video/mp4" />
+            <video
+                className="video"
+                ref={this.getVideoRef}
+                controls={controls}
+                autoPlay={autoPlay}
+                muted={muted}
+                onEnded={() => onEnded()}
+            >
+                <source
+                    src={source}
+                    type="video/mp4"
+                />
             </video>
         );
     };
 }
+
+Video.propTypes = {
+    controls: PropTypes.bool,
+    autoPlay: PropTypes.bool,
+    muted: PropTypes.bool,
+    source: PropTypes.string,
+};
+
+Video.defaultProps = {
+    controls: true,
+    autoPlay: true,
+    muted: true,
+    source: '',
+};
 
 export default Video;

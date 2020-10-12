@@ -2,6 +2,8 @@ import React from "react";
 import Video from "./Video";
 import sampleVideo from '../sample-payload.json';
 import '../styles/video.css';
+import { SWIPE_THRESHOLD, SWIPE_TIMEOUT } from "../constant";
+import VideoInfoCard from "./VideoInfoCard";
 
 class VideoSwiper extends React.Component {
     constructor(props) {
@@ -12,8 +14,29 @@ class VideoSwiper extends React.Component {
         this.xDiff = 0;
         this.yDiff = 0;
         this.state = {
-            activeVideo: 0,
+            activeVideoIndex: 0,
+            showInfoCard: false,
         }
+    }
+
+    handleNextVideo = () => {
+        const { activeVideoIndex } = this.state;
+        if (activeVideoIndex < sampleVideo.length) {
+            this.setState({ activeVideoIndex: activeVideoIndex + 1 });
+            this.setShowInfoCard(false);
+        }
+    }
+
+    handlePrevVideo = () => {
+        const { activeVideoIndex } = this.state;
+        if (activeVideoIndex !== 0) {
+            this.setState({ activeVideoIndex: activeVideoIndex - 1 });
+            this.setShowInfoCard(false);
+        }
+    }
+
+    setShowInfoCard = (showInfoCard) => {
+        this.setState({ showInfoCard })
     }
 
     handleTouchStart = (e) => {
@@ -25,8 +48,8 @@ class VideoSwiper extends React.Component {
     }
 
     handleTouchEnd(e) {
-        const swipeThreshold = parseInt(20, 10);
-        const swipeTimeout = parseInt(500, 10);
+        const swipeThreshold = parseInt(SWIPE_THRESHOLD, 10);
+        const swipeTimeout = parseInt(SWIPE_TIMEOUT, 10);
         const timeDiff = Date.now() - this.timeDown;
         let eventType = '';
 
@@ -34,18 +57,22 @@ class VideoSwiper extends React.Component {
             if (Math.abs(this.xDiff) > swipeThreshold && timeDiff < swipeTimeout) {
                 if (this.xDiff > 0) {
                     eventType = 'swiped-left';
+                    this.setShowInfoCard(true)
                 }
                 else {
                     eventType = 'swiped-right';
+                    this.setShowInfoCard(false)
                 }
             }
         }
         else if (Math.abs(this.yDiff) > swipeThreshold && timeDiff < swipeTimeout) {
             if (this.yDiff > 0) {
                 eventType = 'swiped-up';
+                this.handleNextVideo();
             }
             else {
                 eventType = 'swiped-down';
+                this.handlePrevVideo();
             }
         }
 
@@ -69,18 +96,34 @@ class VideoSwiper extends React.Component {
     }
 
     render() {
-        console.log('sampleVideo=>', sampleVideo);
+        const { activeVideoIndex, showInfoCard } = this.state;
+        const activeVideo = sampleVideo[activeVideoIndex];
+        const {
+            id: key = '',
+            video: { originalUrl: source } = {},
+            channel: { user: { name = '' } = {} } = {},
+        } = activeVideo;
+        console.log('activeVideoIndex=>', activeVideoIndex);
+        console.log('sampleVideo=>', activeVideo);
+        console.log('key=>', key);
+        console.log('source=>', source);
         return (
             <div
                 className='container'
-                id="gestureZone"
                 onTouchStart={(e) => this.handleTouchStart(e)}
                 onTouchEnd={(e) => this.handleTouchEnd(e)}
                 onTouchMove={(e) => this.handleTouchMove(e)}
             >
-                {/* <Video /> */}
-                {/* <Video style={{ 'background-color': 'red' }} />
-                <Video style={{ 'background-color': 'green' }} /> */}
+                {!showInfoCard && (
+                    <Video
+                        key={key}
+                        source={source}
+                        onEnded={this.handleNextVideo}
+                    />
+                )}
+                {showInfoCard && (
+                    <VideoInfoCard name={name} />
+                )}
             </div>
         );
     };
